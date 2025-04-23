@@ -96,7 +96,7 @@ export default function Navbar() {
                   {session.user.name || session.user.email}
                 </span>
                 <button
-                  onClick={() => signOut({ callbackUrl: "/" })}
+                  onClick={() => signOut({ redirect: true, callbackUrl: window.location.origin })}
                   className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   <LogOut className="h-4 w-4 mr-1" />
@@ -221,7 +221,7 @@ export default function Navbar() {
                 <div className="mt-3 space-y-1">
                   <button
                     onClick={() => {
-                      signOut({ callbackUrl: "/" });
+                      signOut({ redirect: true, callbackUrl: window.location.origin });
                       closeMenu();
                     }}
                     className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 w-full text-left"

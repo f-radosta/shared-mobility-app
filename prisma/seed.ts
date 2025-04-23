@@ -108,6 +108,7 @@ async function main() {
   console.log('Created vehicles');
 
   // Create rides
+  // Incoming ride requests
   const ride1 = await prisma.ride.create({
     data: {
       userId: passenger1.id,
@@ -123,6 +124,33 @@ async function main() {
 
   const ride2 = await prisma.ride.create({
     data: {
+      userId: passenger2.id,
+      vehicleId: car1.id,
+      status: RideStatus.REQUESTED,
+      pickupLocation: '789 Elm St, Anytown',
+      dropoffLocation: '101 Maple Dr, Anytown',
+      pickupTime: new Date(Date.now() + 36 * 60 * 60 * 1000), // 1.5 days from now
+      price: 18.75,
+      notes: 'I need help with groceries',
+    },
+  });
+
+  const ride3 = await prisma.ride.create({
+    data: {
+      userId: passenger1.id,
+      vehicleId: car2.id,
+      status: RideStatus.REQUESTED,
+      pickupLocation: '222 Cedar Ln, Anytown',
+      dropoffLocation: '333 Pine St, Othertown',
+      pickupTime: new Date(Date.now() + 48 * 60 * 60 * 1000), // 2 days from now
+      price: 32.00,
+      notes: 'Airport pickup, flight AA123',
+    },
+  });
+
+  // Active rides (accepted or in progress)
+  const ride4 = await prisma.ride.create({
+    data: {
       userId: passenger1.id,
       vehicleId: car3.id,
       status: RideStatus.ACCEPTED,
@@ -134,7 +162,21 @@ async function main() {
     },
   });
 
-  const ride3 = await prisma.ride.create({
+  const ride5 = await prisma.ride.create({
+    data: {
+      userId: passenger2.id,
+      vehicleId: car3.id,
+      status: RideStatus.IN_PROGRESS,
+      pickupLocation: '444 Broadway, Anytown',
+      dropoffLocation: '555 Main St, Othertown',
+      pickupTime: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
+      price: 28.50,
+      notes: 'Business meeting, need to arrive on time',
+    },
+  });
+
+  // Completed rides
+  const ride6 = await prisma.ride.create({
     data: {
       userId: passenger2.id,
       vehicleId: car2.id,
@@ -147,13 +189,84 @@ async function main() {
     },
   });
 
-  // Create a review for the completed ride
+  const ride7 = await prisma.ride.create({
+    data: {
+      userId: passenger1.id,
+      vehicleId: car1.id,
+      status: RideStatus.COMPLETED,
+      pickupLocation: '666 Oak St, Anytown',
+      dropoffLocation: '777 Maple Ave, Othertown',
+      pickupTime: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
+      completedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000 + 1.5 * 60 * 60 * 1000), // 1.5 hours after pickup
+      price: 22.50,
+    },
+  });
+
+  const ride8 = await prisma.ride.create({
+    data: {
+      userId: passenger2.id,
+      vehicleId: car1.id,
+      status: RideStatus.COMPLETED,
+      pickupLocation: '888 Pine St, Anytown',
+      dropoffLocation: '999 Cedar Rd, Othertown',
+      pickupTime: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+      completedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000), // 3 hours after pickup
+      price: 45.00,
+    },
+  });
+
+  // Rejected/Cancelled rides
+  const ride9 = await prisma.ride.create({
+    data: {
+      userId: passenger1.id,
+      vehicleId: car2.id,
+      status: RideStatus.REJECTED,
+      pickupLocation: '123 First St, Anytown',
+      dropoffLocation: '456 Second Ave, Othertown',
+      pickupTime: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
+      price: 30.00,
+      notes: 'Driver unavailable',
+    },
+  });
+
+  const ride10 = await prisma.ride.create({
+    data: {
+      userId: passenger2.id,
+      vehicleId: car3.id,
+      status: RideStatus.CANCELLED,
+      pickupLocation: '789 Third Rd, Anytown',
+      dropoffLocation: '101 Fourth Dr, Othertown',
+      pickupTime: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+      price: 38.25,
+      notes: 'Passenger cancelled due to change of plans',
+    },
+  });
+
+  // Create reviews for the completed rides
   const review1 = await prisma.review.create({
     data: {
       userId: passenger2.id,
-      rideId: ride3.id,
+      rideId: ride6.id,
       rating: 5,
       comment: 'Great driver, very punctual and friendly!',
+    },
+  });
+
+  const review2 = await prisma.review.create({
+    data: {
+      userId: passenger1.id,
+      rideId: ride7.id,
+      rating: 4,
+      comment: 'Good service, car was clean and driver was professional.',
+    },
+  });
+
+  const review3 = await prisma.review.create({
+    data: {
+      userId: passenger2.id,
+      rideId: ride8.id,
+      rating: 3,
+      comment: 'Decent ride but driver was a bit late.',
     },
   });
 

@@ -9,7 +9,8 @@ import LoginForm from "@/components/auth/login-form";
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
+  // Always redirect to dashboard after login, regardless of the callback URL
+  const callbackUrl = "/dashboard";
 
   return (
     <div className="mx-auto flex flex-col justify-center space-y-6 sm:w-[350px]">
