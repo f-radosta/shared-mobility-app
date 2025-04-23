@@ -16,12 +16,12 @@
 - [x] Create seed data for testing
 
 ## Authentication & Authorization
-- [ ] Implement user registration
-- [ ] Implement user login
-- [ ] Set up session persistence
-- [ ] Implement role-based access control (passenger/driver)
-- [ ] Create middleware for API route protection
-- [ ] Implement authorization checks for data ownership
+- [x] Implement user registration
+- [x] Implement user login
+- [x] Set up session persistence
+- [x] Implement role-based access control (passenger/driver)
+- [x] Create middleware for API route protection
+- [x] Implement authorization checks for data ownership
 
 ## User Interface
 - [ ] Create responsive layout with Tailwind CSS
