@@ -1,4 +1,4 @@
-const { PrismaClient, Role } = require('@prisma/client');
+const { PrismaClient, Role, RideStatus } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
@@ -13,6 +13,7 @@ async function hashPassword(password: string): Promise<string> {
 
 async function main() {
   // Clean existing data
+  await prisma.review.deleteMany();
   await prisma.ride.deleteMany();
   await prisma.vehicle.deleteMany();
   await prisma.user.deleteMany();
@@ -62,9 +63,14 @@ async function main() {
   const car1 = await prisma.vehicle.create({
     data: {
       userId: driver1.id,
-      name: 'Tesla Model 3',
-      image: '/images/vehicles/tesla-model-3.jpg',
-      type: 'Electric Car',
+      make: 'Tesla',
+      model: 'Model 3',
+      year: 2023,
+      licensePlate: 'EV-123',
+      capacity: 5,
+      description: 'Comfortable electric sedan with autopilot features and long range battery.',
+      imageUrl: '/images/vehicles/tesla-model-3.jpg',
+      vehicleType: 'SEDAN',
       available: true,
     },
   });
@@ -72,9 +78,14 @@ async function main() {
   const car2 = await prisma.vehicle.create({
     data: {
       userId: driver1.id,
-      name: 'Toyota Prius',
-      image: '/images/vehicles/toyota-prius.jpg',
-      type: 'Hybrid Car',
+      make: 'Toyota',
+      model: 'Prius',
+      year: 2022,
+      licensePlate: 'HB-456',
+      capacity: 4,
+      description: 'Fuel-efficient hybrid vehicle with spacious interior and excellent mileage.',
+      imageUrl: '/images/vehicles/toyota-prius.jpg',
+      vehicleType: 'HATCHBACK',
       available: true,
     },
   });
@@ -82,9 +93,14 @@ async function main() {
   const car3 = await prisma.vehicle.create({
     data: {
       userId: driver2.id,
-      name: 'Ford Mustang',
-      image: '/images/vehicles/ford-mustang.jpg',
-      type: 'Sports Car',
+      make: 'Ford',
+      model: 'Mustang',
+      year: 2021,
+      licensePlate: 'SP-789',
+      capacity: 2,
+      description: 'Powerful sports car with V8 engine and premium sound system. Perfect for quick trips.',
+      imageUrl: '/images/vehicles/ford-mustang.jpg',
+      vehicleType: 'SEDAN',
       available: true,
     },
   });
@@ -96,7 +112,12 @@ async function main() {
     data: {
       userId: passenger1.id,
       vehicleId: car1.id,
-      status: 'pending',
+      status: RideStatus.REQUESTED,
+      pickupLocation: '123 Main St, Anytown',
+      dropoffLocation: '456 Oak Ave, Anytown',
+      pickupTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
+      price: 25.50,
+      notes: 'Please call when you arrive',
     },
   });
 
@@ -104,7 +125,12 @@ async function main() {
     data: {
       userId: passenger1.id,
       vehicleId: car3.id,
-      status: 'accepted',
+      status: RideStatus.ACCEPTED,
+      pickupLocation: '789 Pine Rd, Anytown',
+      dropoffLocation: '101 River Dr, Othertown',
+      pickupTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // Day after tomorrow
+      price: 42.75,
+      notes: 'I have luggage',
     },
   });
 
@@ -112,11 +138,26 @@ async function main() {
     data: {
       userId: passenger2.id,
       vehicleId: car2.id,
-      status: 'completed',
+      status: RideStatus.COMPLETED,
+      pickupLocation: '202 Mountain View, Othertown',
+      dropoffLocation: '303 Beach Blvd, Coastville',
+      pickupTime: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+      completedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000), // 2 hours after pickup
+      price: 35.00,
     },
   });
 
-  console.log('Created rides');
+  // Create a review for the completed ride
+  const review1 = await prisma.review.create({
+    data: {
+      userId: passenger2.id,
+      rideId: ride3.id,
+      rating: 5,
+      comment: 'Great driver, very punctual and friendly!',
+    },
+  });
+
+  console.log('Created rides and reviews');
 
   console.log('Seeding completed!');
 }

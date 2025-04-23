@@ -14,37 +14,75 @@ datasource db {
 }
 
 model User {
-  id       String    @id @default(cuid())
-  email    String    @unique
-  name     String?
-  password String
-  role     Role      @default(PASSENGER)
-  vehicles Vehicle[]
-  rides    Ride[]
+  id        String    @id @default(cuid())
+  email     String    @unique
+  name      String?
+  password  String
+  role      Role      @default(PASSENGER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  vehicles  Vehicle[]
+  rides     Ride[]    // Rides requested by this user (as passenger)
+  reviews   Review[]  // Reviews given by this user
 }
 
 model Vehicle {
-  id        String  @id @default(cuid())
-  userId    String
-  user      User    @relation(fields: [userId], references: [id])
-  name      String
-  image     String // URL or file path
-  type      String
-  available Boolean
-  Ride      Ride[]
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  make         String   @default("")
+  model        String   @default("")
+  year         Int      @default(2023)
+  licensePlate String   @default("")
+  capacity     Int      @default(4)
+  description  String   @default("")
+  imageUrl     String?  // URL or file path
+  vehicleType  String   @default("SEDAN")
+  available    Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+  rides        Ride[]
 }
 
 model Ride {
+  id              String     @id @default(cuid())
+  userId          String     // Passenger requesting the ride
+  vehicleId       String
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicle         Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  status          RideStatus @default(REQUESTED)
+  pickupLocation  String     @default("")
+  dropoffLocation String     @default("")
+  pickupTime      DateTime?
+  price           Float?
+  notes           String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @default(now()) @updatedAt
+  completedAt     DateTime?
+  reviews         Review[]
+}
+
+model Review {
   id        String   @id @default(cuid())
-  userId    String
-  vehicleId String
-  user      User     @relation(fields: [userId], references: [id])
-  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id])
-  status    String // pending, accepted, completed
-  timestamp DateTime @default(now())
+  userId    String   // User who wrote the review
+  rideId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ride      Ride     @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  rating    Int      // 1-5 stars
+  comment   String?
+  createdAt DateTime @default(now())
 }
 
 enum Role {
   PASSENGER
   DRIVER
+}
+
+enum RideStatus {
+  REQUESTED  // Initial state when passenger requests a ride
+  ACCEPTED   // Driver accepted the ride request
+  REJECTED   // Driver rejected the ride request
+  CANCELLED  // Passenger cancelled the ride
+  IN_PROGRESS // Ride is currently in progress
+  COMPLETED  // Ride has been completed
 }
