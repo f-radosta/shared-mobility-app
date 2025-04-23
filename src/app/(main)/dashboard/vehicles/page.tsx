@@ -6,7 +6,11 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Plus, Filter, Search, Car, Calendar, Users } from "lucide-react";
 
-export default async function VehiclesPage() {
+export default async function VehiclesPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
   const session = await getServerSession(authOptions);
   
   if (!session) {
@@ -18,14 +22,48 @@ export default async function VehiclesPage() {
     redirect("/dashboard");
   }
   
-  // Fetch vehicles for the current user
+  // Get search and filter parameters
+  const search = typeof searchParams.search === 'string' ? searchParams.search : '';
+  const vehicleType = typeof searchParams.vehicleType === 'string' ? searchParams.vehicleType : undefined;
+  
+  // Build the where clause for filtering
+  const where: any = {
+    userId: session.user.id,
+  };
+  
+  // Add search condition if provided
+  if (search) {
+    const searchLower = search.toLowerCase();
+    where.OR = [
+      { make: { contains: searchLower } },
+      { model: { contains: searchLower } },
+      { licensePlate: { contains: searchLower } },
+      { description: { contains: searchLower } },
+    ];
+  }
+  
+  // Add vehicle type filter if provided
+  if (vehicleType) {
+    where.vehicleType = vehicleType;
+  }
+  
+  // Fetch vehicles for the current user with filters
   const vehicles = await db.vehicle.findMany({
-    where: {
-      userId: session.user.id,
-    },
+    where,
     orderBy: {
       updatedAt: "desc",
     },
+  });
+  
+  // Get unique vehicle types for the filter dropdown
+  const vehicleTypes = await db.vehicle.findMany({
+    where: {
+      userId: session.user.id,
+    },
+    select: {
+      vehicleType: true,
+    },
+    distinct: ['vehicleType'],
   });
   
   return (
@@ -42,22 +80,49 @@ export default async function VehiclesPage() {
       </div>
       
       {/* Search and filter bar */}
-      <div className="bg-white p-4 rounded-lg shadow-sm mb-6 flex flex-col sm:flex-row gap-4">
+      <form className="bg-white p-4 rounded-lg shadow-sm mb-6 flex flex-col sm:flex-row gap-4">
         <div className="relative flex-grow">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search className="h-5 w-5 text-gray-400" />
           </div>
           <input
             type="text"
+            name="search"
             placeholder="Search vehicles..."
+            defaultValue={search}
             className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           />
         </div>
-        <button className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md bg-white hover:bg-gray-50">
+        <div className="relative">
+          <select
+            name="vehicleType"
+            defaultValue={vehicleType || ''}
+            className="block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          >
+            <option value="">All Types</option>
+            {vehicleTypes.map((type) => (
+              <option key={type.vehicleType} value={type.vehicleType}>
+                {type.vehicleType}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button 
+          type="submit"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
           <Filter className="h-4 w-4 mr-2" />
-          Filter
+          Apply Filters
         </button>
-      </div>
+        {(search || vehicleType) && (
+          <Link 
+            href="/dashboard/vehicles"
+            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md bg-white hover:bg-gray-50"
+          >
+            Clear Filters
+          </Link>
+        )}
+      </form>
       
       {/* Vehicle list or empty state */}
       {vehicles.length > 0 ? (
