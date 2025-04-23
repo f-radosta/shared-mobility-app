@@ -14,7 +14,7 @@ interface LoginFormData {
   password: string;
 }
 
-export default function LoginForm({ callbackUrl = "/" }: LoginFormProps) {
+export default function LoginForm({ callbackUrl = "/dashboard" }: LoginFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -66,7 +66,7 @@ The authentication system uses the following technologies:
 
 7. New user record is created in the database
 
-8. User is redirected to login page
+8. User is automatically logged in and redirected to the dashboard
 
 ### Login Flow
 
@@ -80,7 +80,7 @@ The authentication system uses the following technologies:
 
 5. If authentication succeeds:
    - JWT session token is generated
-   - User is redirected to dashboard
+   - User is automatically logged in and redirected to the dashboard (default destination)
    - Session is persisted in browser
 
 6. If authentication fails:
@@ -199,6 +199,8 @@ export async function GET(request: NextRequest) {
 
 ## Client-Side Authentication
 
+The application uses client components with the "use client" directive for authentication pages and forms. This ensures proper handling of client-side state and event handlers.
+
 The application provides several utilities for client-side authentication:
 
 ### useAuth Hook
@@ -310,6 +312,7 @@ To test the authentication system:
    - Visit `/register`
    - Fill out the form with valid information
    - Select either Passenger or Driver role
+   - Upon successful registration, you'll be automatically logged in and redirected to the dashboard
 
 2. **Login with credentials**:
    - Visit `/login`

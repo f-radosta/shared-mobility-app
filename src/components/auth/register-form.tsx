@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Role } from "@prisma/client";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 interface RegisterFormProps {
   onSuccess: () => void;
@@ -19,6 +21,7 @@ interface RegisterFormData {
 export default function RegisterForm({ onSuccess }: RegisterFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const {
     register,
@@ -53,7 +56,23 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
         throw new Error(result.message || "Registration failed");
       }
 
-      onSuccess();
+      // Auto login after successful registration
+      const loginResult = await signIn("credentials", {
+        redirect: false,
+        email: data.email,
+        password: data.password,
+      });
+
+      if (loginResult?.error) {
+        // If auto-login fails, still consider registration successful
+        // but inform the user they need to login manually
+        setError("Account created successfully, but automatic login failed. Please login manually.");
+        onSuccess();
+      } else {
+        // If login successful, redirect to dashboard
+        router.push("/dashboard");
+        router.refresh();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
     } finally {
