@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { Menu, X, User, Car, LogOut, LogIn, UserPlus } from "lucide-react";
 
@@ -73,16 +73,42 @@ export default function Navbar() {
                     </Link>
                   )}
                   
-                  <Link
-                    href="/dashboard/rides"
-                    className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                      pathname.startsWith("/dashboard/rides")
-                        ? "border-indigo-500 text-gray-900"
-                        : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-                    }`}
-                  >
-                    My Rides
-                  </Link>
+                  {session.user.role === "DRIVER" ? (
+                    <Link
+                      href="/dashboard/rides"
+                      className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                        pathname.startsWith("/dashboard/rides")
+                          ? "border-indigo-500 text-gray-900"
+                          : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                      }`}
+                    >
+                      Manage Rides
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/dashboard/my-rides"
+                      className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                        pathname.startsWith("/dashboard/my-rides")
+                          ? "border-indigo-500 text-gray-900"
+                          : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                      }`}
+                    >
+                      My Rides
+                    </Link>
+                  )}
+                  
+                  {session.user.role === "PASSENGER" && (
+                    <Link
+                      href="/dashboard/request-ride"
+                      className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                        pathname.startsWith("/dashboard/request-ride")
+                          ? "border-indigo-500 text-gray-900"
+                          : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                      }`}
+                    >
+                      Request Ride
+                    </Link>
+                  )}
                 </>
               )}
             </div>
@@ -95,13 +121,13 @@ export default function Navbar() {
                 <span className="text-sm text-gray-700">
                   {session.user.name || session.user.email}
                 </span>
-                <button
-                  onClick={() => signOut({ redirect: true, callbackUrl: window.location.origin })}
+                <a
+                  href="/api/auth/signout"
                   className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   <LogOut className="h-4 w-4 mr-1" />
                   Sign out
-                </button>
+                </a>
               </div>
             ) : (
               <div className="flex items-center space-x-4">
@@ -185,17 +211,45 @@ export default function Navbar() {
                   </Link>
                 )}
                 
-                <Link
-                  href="/dashboard/rides"
-                  onClick={closeMenu}
-                  className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                    pathname.startsWith("/dashboard/rides")
-                      ? "bg-indigo-50 border-indigo-500 text-indigo-700"
-                      : "border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700"
-                  }`}
-                >
-                  My Rides
-                </Link>
+                {session.user.role === "DRIVER" ? (
+                  <Link
+                    href="/dashboard/rides"
+                    onClick={closeMenu}
+                    className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                      pathname.startsWith("/dashboard/rides")
+                        ? "bg-indigo-50 border-indigo-500 text-indigo-700"
+                        : "border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700"
+                    }`}
+                  >
+                    Manage Rides
+                  </Link>
+                ) : (
+                  <Link
+                    href="/dashboard/my-rides"
+                    onClick={closeMenu}
+                    className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                      pathname.startsWith("/dashboard/my-rides")
+                        ? "bg-indigo-50 border-indigo-500 text-indigo-700"
+                        : "border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700"
+                    }`}
+                  >
+                    My Rides
+                  </Link>
+                )}
+                
+                {session.user.role === "PASSENGER" && (
+                  <Link
+                    href="/dashboard/request-ride"
+                    onClick={closeMenu}
+                    className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                      pathname.startsWith("/dashboard/request-ride")
+                        ? "bg-indigo-50 border-indigo-500 text-indigo-700"
+                        : "border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700"
+                    }`}
+                  >
+                    Request Ride
+                  </Link>
+                )}
               </>
             )}
           </div>
@@ -219,15 +273,13 @@ export default function Navbar() {
                   </div>
                 </div>
                 <div className="mt-3 space-y-1">
-                  <button
-                    onClick={() => {
-                      signOut({ redirect: true, callbackUrl: window.location.origin });
-                      closeMenu();
-                    }}
+                  <a
+                    href="/api/auth/signout"
                     className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 w-full text-left"
+                    onClick={closeMenu}
                   >
                     Sign out
-                  </button>
+                  </a>
                 </div>
               </>
             ) : (
